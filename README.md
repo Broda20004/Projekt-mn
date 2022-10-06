@@ -1,2 +1,1 @@
-Program is realising image enhancement and thresholding, to get the best effect for each object are setting cut off values by using genetic algorithm.
-Algorythm was based on resarch carried by  H.D. Cheng*, Yen-Hung Chen, Ying Sun documended in "A novel fuzzy entropy approach to image enhancement and thresholding".
+The program performs image enhancement and tresholding. To obtain the best effect, cut-off values are being set for each object using a genetic algorithm. This algorithm is based on research conducted by H.D. Cheng, Yen-Hung Chen and Ying Sun, documented in 'A novel fuzzy entropy approach to image enhancement and thresholding'.
