@@ -1,4 +1,3 @@
-#wzmacnieniae obrazu metodą rozmytej entropii za pomocą algorytmu genetycznego
 import cv2
 import numpy as np
 import random
@@ -111,57 +110,68 @@ def imageprocesing(img):
             else:
                 img[i][j] = int(255 / 2)
     return img
+import cv2
+import numpy as np
+import random
+import math
+
+
 if __name__ == "__main__":
-
-
-    filenames = ("example3.jpg")  # , "example2.jpg", "example3.jpg")
-    img = cv2.imread(filenames, cv2.IMREAD_GRAYSCALE)
+    filenames = ("example3.jpg",)  # Put the correct file path here
+    img = cv2.imread(filenames[0], cv2.IMREAD_GRAYSCALE)
     hist_img = histogram_img(img)
-    parents_table = np.array([], np.uint8)
 
     old_pop = generate_population(MAX_PIXEL_VALUE + 1, POPULATION_SIZE)
-    probability_histogram = hist_img/np.sum(hist_img).astype(np.float32)
-    # start petli
+    probability_histogram = hist_img / np.sum(hist_img).astype(np.float32)
+
     for k in range(GENERATIONS):
         new_pop = []
-        for j in range(100):
+        parents_table = np.array([], np.uint8)  # Initialize parents_table inside the loop
+
+        for j in range(POPULATION_SIZE):
             membership_array = membership_function(old_pop[j])
             Pp = calculate_Pp(FINAL_GREY_LEVELS, probability_histogram, membership_array)
             entropy = round(calculate_entropy(Pp, FINAL_GREY_LEVELS), 2)
-            parent_probaility = int(entropy * 10)
-            for p in range(parent_probaility):
-                parents_table = np.append(parents_table, j)
+            parent_probability = int(entropy * 10)
+
+            if parent_probability > 0:  # Only add to parents_table if parent_probability is positive
+                for p in range(parent_probability):
+                    parents_table = np.append(parents_table, j)
+
         for j in range(50):
-            parent_1 = random.choice(parents_table)
-            parent_2 = random.choice(parents_table)
-            while(parent_2==parent_1):
-                parent_2 = random.choice(parents_table)
-            child1, child2 = crossover(old_pop[parent_1], old_pop[parent_2], 0.5)
-            child1 = mutation(child1, 0.01)
-            child2 = mutation(child2, 0.01)
-            new_pop.append(adjust_values(child1))
-            new_pop.append(adjust_values(child2))
+            # Convert parents_table to a Python list to avoid the "ambiguous truth value" error
+            parents_list = parents_table.tolist()
+            if len(parents_list) > 1:
+                parent_1, parent_2 = random.choices(parents_list, k=2)
+
+                child1, child2 = crossover(old_pop[parent_1], old_pop[parent_2], 0.5)
+                child1 = mutation(child1, 0.01)
+                child2 = mutation(child2, 0.01)
+                new_pop.append(adjust_values(child1))
+                new_pop.append(adjust_values(child2))
+
         old_pop = np.array(new_pop, np.uint8)
+
     entropy_list = []
     membership_list = []
 
-
-    for j in range(100):
-
+    for j in range(POPULATION_SIZE):
         membership = membership_function(old_pop[j])
         membership_list.append(membership)
-        Pp = calculate_Pp(FINAL_GREY_LEVELS, probability_histogram, membership_array)
+        Pp = calculate_Pp(FINAL_GREY_LEVELS, probability_histogram, membership)
         entropy_list.append(round(calculate_entropy(Pp, FINAL_GREY_LEVELS), 2))
+
     best_parameters = old_pop[np.argmax(entropy_list)]
     best_membership = membership_list[np.argmax(entropy_list)]
     print(np.max(entropy_list))
 
     gray_bounds = []
     for i in range(FINAL_GREY_LEVELS-1):
-         membership_condition = np.where(best_membership <= (i+1)/FINAL_GREY_LEVELS, best_membership, 0)
-         gray_bounds.append(np.argmax(membership_condition))
+        membership_condition = np.where(best_membership <= (i+1)/FINAL_GREY_LEVELS, best_membership, 0)
+        gray_bounds.append(np.argmax(membership_condition))
     print(gray_bounds)
 
-    img = imageprocesing(img)
-    cv2.imshow("processed image", img)
+    img_processed = imageprocesing(img)
+    cv2.imshow("Processed Image", img_processed)
     cv2.waitKey(0)
+    cv2.destroyAllWindows()
